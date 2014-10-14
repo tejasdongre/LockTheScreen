@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -16,43 +17,60 @@ public class MyActivity extends Activity {
     DevicePolicyManager deviceManager;
     ActivityManager activityManager;
     ComponentName componentName;
-    public static int REQUEST_ENABLE = 1;
+    public static final int RESULT_ENABLE  = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //    setContentView(R.layout.activity_my);
+            setContentView(R.layout.activity_my);
         try {
+            //  Context mContext =   getApplicationContext();
             deviceManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
             activityManager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
             componentName = new ComponentName(this, myAdminClass.class);
-            if (!deviceManager.isAdminActive(componentName)) {
-                Intent devManagerIntent = new Intent(DevicePolicyManager.EXTRA_DEVICE_ADMIN);
-                devManagerIntent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
-                devManagerIntent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Why??");
-                startActivityForResult(devManagerIntent, REQUEST_ENABLE);
 
+            //  Intent devManagerIntent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
 
-            } else {
+            Intent devManagerIntent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+            devManagerIntent.putExtra(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN, componentName);
+            devManagerIntent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Why??");
+            startActivityForResult(devManagerIntent, RESULT_ENABLE);
 
-                deviceManager.lockNow();
-
-            }
 
         } catch (Exception ex) {
-
+            Log.v("error",ex.getMessage()+"Testing");
 
         }
+
+
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
 
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_ENABLE) {
+        if (requestCode == RESULT_ENABLE) {
+            if(resultCode == Activity.RESULT_OK) {
+                if (deviceManager.isAdminActive(componentName)) {
+                    deviceManager.lockNow();
 
-            deviceManager.lockNow();
+                }
 
+            }
 
         }
 
@@ -88,6 +106,11 @@ public class MyActivity extends Activity {
         @Override
         public void onDisabled(Context context, Intent intent) {
             super.onDisabled(context, intent);
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            super.onReceive(context, intent);
         }
     }
 }
